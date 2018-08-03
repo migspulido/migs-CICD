@@ -1,0 +1,97 @@
+home: /data/jenkins
+main_job_src: service-workflow-config.xml
+service_redeploy_src: service-redeploy-config.xml
+
+configs: [
+  { src: "credentials.xml", dir: "/data/jenkins", file: "credentials.xml", mode: "0777" },
+  { src: "migscicd-config.xml", dir: "/data/jenkins/nodes/migscicd", file: "config.xml", mode: "0777" },
+  { src: "prod-config.xml", dir: "/data/jenkins/nodes/prod", file: "config.xml", mode: "0777" },
+  { src: "swarm-master-config.xml", dir: "/data/jenkins/nodes/swarm-master", file: "config.xml", mode: "0777" },
+  { src: "LogParserPublisher.xml", dir: "/data/jenkins", file: "hudson.plugins.logparser.LogParserPublisher.xml", mode: "0777" },
+  { src: "parsing_rules", dir: "/data/jenkins", file: "parsing_rules", mode: "0777" },
+  { src: "scriptApproval.xml", dir: "/data/jenkins", file: "scriptApproval.xml", mode: "0644" }
+]
+
+jobs: [
+  {
+    name: "migs-base-ansible",
+    service_name: "migs-base",
+    src: "service-ansible-config.xml"
+  }, {
+    name: "migs-base",
+    service_name: "migs-base",
+    src: "{{ main_job_src }}"
+  }, {
+    name: "migs-base-multibranch",
+    service_name: "migs-base",
+    src: "service-workflow-multibranch-config.xml"
+  }, {
+    name: "migs-base-blue-green",
+    service_name: "migs-base",
+    src: "service-blue-green-config.xml"
+  }, {
+    name: "migs-base-swarm",
+    service_name: "migs-base",
+    src: "service-swarm-config.xml"
+  }, {
+    name: "service-redeploy",
+    service_name: "migs-base",
+    src: "{{ service_redeploy_src }}"
+  }, {
+    name: "migs-base-scale",
+    service_name: "migs-base",
+    src: "service-scale-config.xml",
+    scale: "2",
+    time: "45 23 31 12 *"
+  }, {
+    name: "migs-base-descale",
+    service_name: "migs-base",
+    src: "service-scale-config.xml",
+    scale: "-2",
+    time: "15 0 2 1 *"
+  }, {
+     name: "hardware-notification",
+     service_name: "migs-base",
+     src: "hardware-notification-config.xml"
+  }, {
+    name: "go-demo-scale",
+    service_name: "go-demo",
+    src: "service-scale-df-config.xml",
+    scale: "+2",
+    time: "45 23 31 12 *"
+  }, {
+    name: "service-scale",
+    service_name: "my-service",
+    src: "service-scale-health-config.xml",
+    scale: "+1",
+  }, {
+    name: "go-demo-descale",
+    service_name: "go-demo",
+    src: "service-scale-df-config.xml",
+    scale: "-2",
+    time: "15 0 2 1 *"
+  }, {
+    name: "go-demo-1",
+    service_name: "go-demo",
+    src: "go-demo-1.xml"
+  }, {
+    name: "go-demo-2",
+    service_name: "go-demo",
+    src: "go-demo-2.xml"
+  }, {
+    name: "go-demo-3",
+    service_name: "go-demo",
+    src: "go-demo-3.xml"
+  }
+]
+
+plugins:
+  - git
+  - log-parser
+  - copyartifact
+  - workflow-aggregator
+  - workflow-multibranch
+  - workflow-scm-step
+  - docker-workflow
+  - template-project
+  - ssh-slaves
